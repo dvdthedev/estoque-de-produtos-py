@@ -33,17 +33,17 @@ class Produto:
 produtos = [Produto('Sabão em pó', 250), Produto('Detergente', 100), Produto('Desengordurante', 0), Produto('Esponja de Aço', 1050)]
 
 
-def obter_valor_valido():
+def obter_valor_valido(minimo, maximo):
     while True:
-        entrada = input("Digite um número entre 1 e 4: ")
+        entrada = input(f"Digite uma opção ou aperte {maximo} para sair: ")
 
         try:
             valor = int(entrada)
 
-            if 1 <= valor <= 4:
+            if minimo <= valor <= maximo:
                 return valor
             else:
-                print("Valor inválido! Digite um número entre 1 e 4.\n")
+                print(f"Valor inválido! Digite um número entre {minimo} e {maximo}.\n")
 
         except (ValueError, TypeError):
             print("Valor inválido! O valor digitado não é um número inteiro.\n")
@@ -73,7 +73,7 @@ valor_opcao = 0
 
 while valor_opcao != 4:
 
-    valor_opcao = obter_valor_valido()
+    valor_opcao = obter_valor_valido(1,4)
     if valor_opcao == 1:
         listar_produtos()
     if valor_opcao == 2:
