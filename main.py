@@ -88,17 +88,13 @@ def obter_produto_valido():
 
 
 def listar_produtos():
-    contador = 0;
-    while contador < len(produtos):
-        produtos[contador].exibir_historico()
-        contador += 1
+    listar_produtos_para_soma()
 
 def listar_produtos_para_soma():
     contador = 0;
     while contador < len(produtos):
         print(f'Produto N-{contador}: {produtos[contador].nome}')
         contador += 1
-    return contador
 
 def obter_quantidade_valida():
     while True:
