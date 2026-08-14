@@ -1,26 +1,34 @@
+# ==========================================
+# SISTEMA DE CONTROLE DE ESTOQUE
+# ==========================================
+
 class Movimentacao:
+    """Classe responsável por armazenar os dados de cada movimentação (entrada/saída)."""
     def __init__(self, quantidade, data, responsavel: str = None):
         self.quantidade = quantidade
         self.data = data
         self.responsavel = responsavel
 
     def __repr__(self):
-        info = f'Quantidade: {self.quantidade}\n Data: {self.data}\n'
+        info = f'Quantidade: {self.quantidade}\nData: {self.data}\n'
         if self.responsavel:
             info += f'Responsavel: {self.responsavel}\n'
         return f"{info}"
 
+
 class Produto:
+    """Classe que representa o produto e gerencia suas movimentações de estoque."""
     def __init__(self, nome, quantidade):
         self.nome = nome
         self.quantidade = quantidade
         self.entradas = []
         self.saidas = []
+
     def __repr__(self):
-        info = f'Produto: {self.nome}\nEstoque: {self.quantidade}\n'
-        return f"{info}"
+        return f"Produto: {self.nome} | Estoque: {self.quantidade}\n"
 
     def exibir_historico(self):
+        """Exibe o extrato detalhado de entradas e saídas do produto."""
         print(f"\n{'=' * 10} HISTÓRICO: {self.nome} {'=' * 10}")
         print(f"Estoque atual: {self.quantidade}\n")
 
@@ -29,7 +37,6 @@ class Produto:
             print("  Nenhuma entrada registrada.")
         else:
             for item in self.entradas:
-                # O f-string com o objeto chama o __repr__ da Movimentacao
                 print(f"  - Data: {item.data} | Qtd: {item.quantidade}")
 
         print("\n>>> SAÍDAS:")
@@ -43,143 +50,174 @@ class Produto:
         print("=" * 40 + "\n")
 
     def dar_entrada(self, quantidade, data):
-        if(quantidade <= 0):
-            return f'Quantidade {quantidade} é inválida, digite um valor positivo\n'
+        """Adiciona quantidade ao estoque e registra no histórico de entradas."""
+        if quantidade <= 0:
+            print(f'Quantidade {quantidade} é inválida, digite um valor positivo.\n')
+            return
         registro = Movimentacao(quantidade, data)
         self.quantidade += quantidade
         self.entradas.append(registro)
 
     def dar_saida(self, quantidade, data, responsavel):
+        """Remove quantidade do estoque e registra no histórico de saídas."""
         registro = Movimentacao((quantidade * -1), data, responsavel)
         self.quantidade -= quantidade
         self.saidas.append(registro)
 
-produtos = [Produto('Sabão em pó', 250), Produto('Detergente', 100), Produto('Desengordurante', 0), Produto('Esponja de Aço', 1050)]
 
+# Lista de produtos pré-cadastrados
+produtos = [
+    Produto('Sabão em pó', 250),
+    Produto('Detergente', 100),
+    Produto('Desengordurante', 0),
+    Produto('Esponja de Aço', 1050)
+]
+
+
+# ==========================================
+# FUNÇÕES DE ENTRADA E VALIDAÇÃO DE DADOS
+# ==========================================
 
 def obter_opcao_valida(minimo, maximo):
+    """Valida a opção numérica selecionada no menu."""
     while True:
-        entrada = input(f"Digite uma opção ou aperte {maximo} para sair: ")
-
+        entrada = input(f"Digite a opção desejada ({minimo}-{maximo}): ")
         try:
             valor = int(entrada)
-
             if minimo <= valor <= maximo:
                 return valor
-            else:
-                print(f"Valor inválido! Digite um número entre {minimo} e {maximo -1}  ou {maximo} para sair.\n")
-
+            print(f"Opção inválida! Digite um número entre {minimo} e {maximo}.\n")
         except (ValueError, TypeError):
-            print("Valor inválido! O valor digitado não é um número inteiro.\n")
+            print("Valor inválido! Digite um número inteiro.\n")
+
+
+def listar_produtos_cadastrados():
+    """Imprime a lista de produtos com seus respectivos índices."""
+    print("\n--- Produtos Disponíveis ---")
+    for i, prod in enumerate(produtos):
+        print(f"[{i}] {prod.nome} (Estoque: {prod.quantidade})")
+
 
 def obter_produto_valido():
+    """Garante a seleção de um índice de produto existente na lista."""
     while True:
-        listar_produtos_para_soma()
-        entrada = input(f"Escolha um produto da lista: ")
+        listar_produtos_cadastrados()
+        entrada = input("Escolha o número do produto: ")
         try:
             valor = int(entrada)
-            if valor >= 0 and valor <= len(produtos) -1:
+            if 0 <= valor < len(produtos):
                 return valor
-            else:
-                print(f"Produto inválido, digite um produto da lista entre {0} e {len(produtos) -1}")
+            print(f"Produto inválido! Escolha um valor entre 0 e {len(produtos) - 1}.\n")
         except (ValueError, TypeError):
-            print("Quantidade inválida! A quantidade digitada não é um número inteiro.\n")
-
+            print("Entrada inválida! Digite um número inteiro.\n")
 
 
 def listar_produtos():
-    listar_produtos_para_soma()
+    """Menu para consulta de histórico detalhado de um produto."""
+    listar_produtos_cadastrados()
+    entrada = input("Escolha o número do produto para ver detalhes (ou 's' para voltar): ")
+    if entrada.lower() == 's':
+        return
+    try:
+        opcao = int(entrada)
+        if 0 <= opcao < len(produtos):
+            produtos[opcao].exibir_historico()
+        else:
+            print(f"Opção inválida! Escolha entre 0 e {len(produtos) - 1}.\n")
+    except (ValueError, TypeError):
+        print("Opção inválida!\n")
 
-def listar_produtos_para_soma():
-    contador = 0;
-    while contador < len(produtos):
-        print(f'Produto N-{contador}: {produtos[contador].nome}')
-        contador += 1
 
 def obter_quantidade_valida():
+    """Garante que a quantidade informada seja um número inteiro positivo."""
     while True:
         try:
-            quantidade = int(input(f"Digite uma quantidade do produto: "))
+            quantidade = int(input("Digite a quantidade: "))
             if quantidade <= 0:
-                print("Digite um valor válido")
+                print("A quantidade deve ser maior que zero.\n")
             else:
                 return quantidade
         except (ValueError, TypeError):
-            print("Quantidade inválida! A quantidade digitada não é um número inteiro.\n")
+            print("Quantidade inválida! Digite um número inteiro.\n")
+
 
 def obter_data():
-    # 1. Validação do Dia
+    """Coleta e valida dia, mês e ano, retornando formatado em DD/MM/AAAA."""
     while True:
-        entrada = input("Entre com o dia (1-31): ")
         try:
-            dia = int(entrada)
+            dia = int(input("Entre com o dia (1-31): "))
             if 1 <= dia <= 31:
                 break
-            print("Dia inválido! Digite um número entre 1 e 31.\n")
-        except (ValueError, TypeError):
+            print("Dia inválido! Digite entre 1 e 31.\n")
+        except ValueError:
             print("Valor inválido! Digite um número inteiro.\n")
 
-    # 2. Validação do Mês
     while True:
-        entrada = input("Entre com o mês (1-12): ")
         try:
-            mes = int(entrada)
+            mes = int(input("Entre com o mês (1-12): "))
             if 1 <= mes <= 12:
                 break
-            print("Mês inválido! Digite um número entre 1 e 12.\n")
-        except (ValueError, TypeError):
+            print("Mês inválido! Digite entre 1 e 12.\n")
+        except ValueError:
             print("Valor inválido! Digite um número inteiro.\n")
 
-    # 3. Validação do Ano
     while True:
-        entrada = input("Entre com o ano (4 dígitos, maior que 1999): ")
         try:
-            ano = int(entrada)
+            ano = int(input("Entre com o ano (a partir de 2000): "))
             if ano >= 2000:
                 break
             print("Ano inválido! Digite um ano a partir de 2000.\n")
-        except (ValueError, TypeError):
+        except ValueError:
             print("Valor inválido! Digite um número inteiro.\n")
-
 
     return f"{dia:02d}/{mes:02d}/{ano}"
 
 
-print(50* '-')
-print('Bem vindo ao administrador de estoque!\n')
+# ==========================================
+# FLUXO PRINCIPAL DO PROGRAMA
+# ==========================================
 
+print('-' * 50)
+print('Bem-vindo ao Administrador de Estoque!')
+print('-' * 50)
 
-valor_opcao = 0
-
-while valor_opcao != 4:
-
-    print('Escolha uma opção: ')
-    print('1 - Listar produtos')
-    print('2 - Adicionar ao estoque')
-    print('3 - Remover estoque')
+while True:
+    print('\nMenu Principal:')
+    print('1 - Consultar histórico de produto')
+    print('2 - Adicionar ao estoque (Entrada)')
+    print('3 - Remover do estoque (Saída)')
     print('4 - Sair')
 
-    valor_opcao = obter_opcao_valida(1,4)
+    valor_opcao = obter_opcao_valida(1, 4)
+
     if valor_opcao == 1:
         listar_produtos()
-    if valor_opcao == 2:
-        produto_valido = obter_produto_valido()
-        quantidade = obter_quantidade_valida()
+
+    elif valor_opcao == 2:
+        print("\n--- REGISTRO DE ENTRADA ---")
+        idx_prod = obter_produto_valido()
+        qtd = obter_quantidade_valida()
         data = obter_data()
-        produtos[produto_valido].dar_entrada( quantidade, data)
-        print(produtos[produto_valido])
-    if valor_opcao == 3:
-        produto_valido = obter_produto_valido()
-        quantidade = obter_quantidade_valida()
-        if quantidade > produtos[produto_valido].quantidade:
-            print(f"A quantidade foi digitada é maior que a quantidade em estoque!\nQuantidade: {quantidade}\nEstoque: {produtos[produto_valido].quantidade}")
+        produtos[idx_prod].dar_entrada(qtd, data)
+        print(f"\nEntrada realizada com sucesso! Novo saldo:")
+        print(produtos[idx_prod])
+
+    elif valor_opcao == 3:
+        print("\n--- REGISTRO DE SAÍDA ---")
+        idx_prod = obter_produto_valido()
+        qtd = obter_quantidade_valida()
+
+        # Validação de estoque suficiente
+        if qtd > produtos[idx_prod].quantidade:
+            print(f"\n[ERRO] Quantidade solicitada ({qtd}) é maior que o estoque atual ({produtos[idx_prod].quantidade})!")
             continue
+
         data = obter_data()
-        colaborador = input("Digite o nome do colaborador: ")
-        produtos[produto_valido].dar_saida(quantidade, data, colaborador)
-        print(produtos[produto_valido])
+        colaborador = input("Digite o nome do responsável: ")
+        produtos[idx_prod].dar_saida(qtd, data, colaborador)
+        print(f"\nSaída registrada com sucesso! Novo saldo:")
+        print(produtos[idx_prod])
 
-    if valor_opcao == 4:
-        print('Encerrando...')
+    elif valor_opcao == 4:
+        print('\nEncerrando o sistema...')
         break
-
